@@ -17,11 +17,13 @@ const authSlice = createSlice({
       state.email = action.payload.email;
       state.token = action.payload.token;
       state.userData = action.payload.userData;
+      // localStorage.setItem('auth', JSON.stringify(state));
     },
     logout: (state) => {
       state.isAuthenticated = false;
       state.email = null;
       state.token = null;
+      // localStorage.removeItem('auth');
     },
   },
 });
