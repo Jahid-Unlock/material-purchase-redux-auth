@@ -11,9 +11,8 @@ import {
 } from "@/components/ui/table";
 
 const MaterialList = ({ list }) => {
-  const { data } = list;
 
-  console.log(data)
+  const { data } = list;
 
   return (
     <div className="container py-4">
