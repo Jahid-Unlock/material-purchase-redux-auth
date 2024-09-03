@@ -22,6 +22,7 @@ import { useEffect, useState } from "react";
 import Cookies from 'js-cookie';
 import { format } from 'date-fns';
 import { useRouter } from "next/navigation";
+import toast, { Toaster } from 'react-hot-toast';
 
 const AddMaterial = () => {
 
@@ -34,7 +35,7 @@ const AddMaterial = () => {
     const handleCreateNewRowMaterialPurchase = () => {
 
         setCreatedRowsMaterialPurchase(prevRows => {
-            return [...prevRows, initRowMaterialPurchase];
+            return [...prevRows, MaterialPurchaseFields];
         })
     }
 
@@ -48,7 +49,7 @@ const AddMaterial = () => {
     }, []);
 
 
-    const initRowMaterialPurchase = {
+    const MaterialPurchaseFields = {
         items: {
             value: '',
             type: 'text',
@@ -94,10 +95,9 @@ const AddMaterial = () => {
 
     };
 
-    function passValidationMaterialPurchase(e, dataType = null) {
+    function materialPurchaseFieldValidation(e, dataType = null) {
         let resP = true;
         if (dataType === 'number') {
-            //const regex = /^(\-?)+(\d?)+(\.\d*)?$/;
             const regex = /^(\-?)+\d*\.?\d{0,2}$/;
             if (!(regex.test(e.target.value))) {
                 e.target.setCustomValidity('Please enter a valid number.');
@@ -135,7 +135,7 @@ const AddMaterial = () => {
     }
 
 
-    const handleInputValueMaterialPurchase = (value, rowIndex, cell) => {
+    const handleInputValue = (value, rowIndex, cell) => {
         setCreatedRowsMaterialPurchase(prevRows => {
             if (prevRows[rowIndex][cell] && prevRows[rowIndex][cell].hasOwnProperty('value')) {
                 if (prevRows[rowIndex][cell].type === 'number') {
@@ -166,8 +166,8 @@ const AddMaterial = () => {
             case 'items':
                 html = (
                     <td><input className="common_input" type={'text'} placeholder="" value={rowCell.value} onChange={(e) => {
-                        if (passValidationMaterialPurchase(e, rowCell.type)) {
-                            handleInputValueMaterialPurchase(e.target.value, rowIndex, cell)
+                        if (materialPurchaseFieldValidation(e, rowCell.type)) {
+                            handleInputValue(e.target.value, rowIndex, cell)
                         }
 
                     }} /></td>
@@ -177,8 +177,8 @@ const AddMaterial = () => {
                 html = (
                     <td>
                         <input className="common_input" type={'text'}  value={rowCell.value} onChange={(e) => {
-                            if (passValidationMaterialPurchase(e, rowCell.type)) {
-                                handleInputValueMaterialPurchase(e.target.value, rowIndex, cell)
+                            if (materialPurchaseFieldValidation(e, rowCell.type)) {
+                                handleInputValue(e.target.value, rowIndex, cell)
                             }
                         }} />
                     </td>
@@ -188,8 +188,8 @@ const AddMaterial = () => {
                 html = (
                     <td>
                         <input className="common_input" type={'text'}  value={rowCell.value} onChange={(e) => {
-                            if (passValidationMaterialPurchase(e, rowCell.type)) {
-                                handleInputValueMaterialPurchase(e.target.value, rowIndex, cell)
+                            if (materialPurchaseFieldValidation(e, rowCell.type)) {
+                                handleInputValue(e.target.value, rowIndex, cell)
                             }
                         }} />
 
@@ -201,8 +201,8 @@ const AddMaterial = () => {
                     <td>
                         <span className='flex items-center gap-1 text-black-50'>&#36;
                             <input className="common_input" type={'text'} placeholder=""  value={rowCell.value} onChange={(e) => {
-                                if (passValidationMaterialPurchase(e, rowCell.type)) {
-                                    handleInputValueMaterialPurchase(e.target.value, rowIndex, cell)
+                                if (materialPurchaseFieldValidation(e, rowCell.type)) {
+                                    handleInputValue(e.target.value, rowIndex, cell)
                                 }
 
                             }} />
@@ -214,8 +214,8 @@ const AddMaterial = () => {
                 html = (
                     <td>
                         <input className="common_input" type={'text'} maxLength="5" value={rowCell.value} onChange={(e) => {
-                        if (passValidationMaterialPurchase(e, 'card_number')) {
-                            handleInputValueMaterialPurchase(e.target.value, rowIndex, cell)
+                        if (materialPurchaseFieldValidation(e, 'card_number')) {
+                            handleInputValue(e.target.value, rowIndex, cell)
                         }
                     }} /></td>
                 )
@@ -228,8 +228,8 @@ const AddMaterial = () => {
                                 type="date"
                                 value={rowCell.value}
                                 onChange={(e) => {
-                                    if (passValidationMaterialPurchase(e, rowCell.type)) {
-                                        handleInputValueMaterialPurchase(e.target.value, rowIndex, cell);
+                                    if (materialPurchaseFieldValidation(e, rowCell.type)) {
+                                        handleInputValue(e.target.value, rowIndex, cell);
                                     }
                                 }}
                             />
@@ -256,11 +256,8 @@ const AddMaterial = () => {
 
 
     const handleFormSubmit = async () => {
-        // Prepare the data in the expected JSON format
         const materialPurchaseData = createdRowsMaterialPurchase.map((data) => {
-            const formattedDate = data?.transactionDate?.value
-                ? format(new Date(data.transactionDate.value), 'MM-dd-yyyy')
-                : null;
+            const formattedDate = data?.transactionDate?.value ? format(new Date(data.transactionDate.value), 'MM-dd-yyyy') : null;
         
             return {
                 line_item_name: data?.items?.value,
@@ -272,42 +269,36 @@ const AddMaterial = () => {
             };
         });
     
-        // Create the request payload
         const payload = {
             material_purchase: materialPurchaseData
         };
-    
         try {
-            // Send the POST request to the API
             const response = await fetch('https://devapi.propsoft.ai/api/auth/interview/material-purchase', {
                 method: 'POST',
                 headers: apiHeaders,
                 body: JSON.stringify(payload),
             });
-    
-            // Check if the response is ok
             if (!response.ok) {
+                const errorData = await response.json();
+                errorData.status_message && toast.error(errorData.status_message)
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-    
-            // Optionally handle the response
             const responseData = await response.json();
-            console.log('Submission successful:', responseData);
+            responseData.status_message && toast.success(responseData.status_message)
             setopenDialog(false)
+            setCreatedRowsMaterialPurchase([])
             router.refresh()
-    
-            // Reset the form or provide feedback to the user as needed
         } catch (error) {
             console.error('Error submitting form:', error);
-            // Optionally handle the error (e.g., display an error message to the user)
         }
     };
 
 
     return (
         <div className="container flex items-center justify-between mt-12 pb-6">
+             <Toaster />
             <h3 className="text-4xl font-semibold text-primary">Material Purchase</h3>
-            <Dialog open={openDialog}>
+            <Dialog open={openDialog} onOpenChange={setopenDialog}>
                 <DialogTrigger asChild>
                     <Button size="lg" onClick={()=> setopenDialog(true)}>Add Material Purchase</Button>
                 </DialogTrigger>

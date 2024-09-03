@@ -1,4 +1,5 @@
 "use client";
+
 import {
   Table,
   TableBody,
@@ -10,12 +11,27 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
+
+import { format } from 'date-fns';
+
 const MaterialList = ({ list }) => {
 
   const { data } = list;
 
+
+ 
+
   return (
-    <div className="container py-4">
+    <div className="container pt-4 pb-12">
       <Table>
         <TableCaption>A list of your Items</TableCaption>
         <TableHeader>
@@ -36,11 +52,13 @@ const MaterialList = ({ list }) => {
               <TableCell>{item.runners_name}</TableCell>
               <TableCell >{item.amount}</TableCell>
               <TableCell >{item.card_number}</TableCell>
-              <TableCell className="text-right">{item.transaction_date}</TableCell>
+              <TableCell className="text-right">{item.transaction_date ? format(new Date(item.transaction_date), 'dd MMM, yyyy') : null}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { loginSuccess } from '@/redux/slices/authSlice';
 import { useDispatch } from "react-redux";
+import toast, { Toaster } from 'react-hot-toast';
 
 const LoginForm = () => {
 
@@ -50,7 +51,7 @@ const LoginForm = () => {
             if (response.ok && data.status_code === "1") {
 
                 document.cookie = `authToken=${data.access_token}; path=/;`;
-                
+
                 dispatch(loginSuccess({
                     email: data.user_data.email,
                     // token: data.access_token,
@@ -58,7 +59,8 @@ const LoginForm = () => {
                 }));
 
                 router.push('/');
-                
+                toast.success("Login Success!!")
+
             } else {
                 setError(data.status_message || 'Failed to log in');
             }
@@ -68,38 +70,41 @@ const LoginForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <div className="mt-10 space-y-5">
-                <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                        type="email"
-                        placeholder="Email"
-                        id="email"
-                        name="email"
-                        className="h-12 mt-1"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
+        <>
+            <Toaster />
+            <form onSubmit={handleSubmit}>
+                <div className="mt-10 space-y-5">
+                    <div>
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                            type="email"
+                            placeholder="Email"
+                            id="email"
+                            name="email"
+                            className="h-12 mt-1"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                            type="password"
+                            placeholder="Password"
+                            id="password"
+                            name="password"
+                            className="h-12 mt-1"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                    </div>
+                    <div className="pt-6">
+                        <Button type="submit" size={"lg"}>Sign in</Button>
+                    </div>
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
                 </div>
-                <div>
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                        type="password"
-                        placeholder="Password"
-                        id="password"
-                        name="password"
-                        className="h-12 mt-1"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                </div>
-                <div className="pt-6">
-                    <Button type="submit" size={"lg"}>Sign in</Button>
-                </div>
-                {error && <p style={{ color: 'red' }}>{error}</p>}
-            </div>
-        </form>
+            </form>
+        </>
     );
 };
 
