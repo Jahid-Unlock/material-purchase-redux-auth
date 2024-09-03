@@ -1,34 +1,29 @@
-// src/components/Header.js
+
 "use client";
 
+import { useSelector } from 'react-redux';
 import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
-import { useSelector } from "react-redux";
+import Cookies from 'js-cookie';
+import { useRouter } from "next/navigation";
+import toast from 'react-hot-toast';
 
 const Header = () => {
-  const userData = useSelector((state) => state.auth.userData);
 
-  const [email, setEmail] = useState("");
+  const email = useSelector((state) => state.auth.email);
 
-  useEffect(() => {
-    const authData = localStorage.getItem("auth");
+  const router = useRouter()
 
-    if (authData) {
-      try {
-        const parsedAuthData = JSON.parse(authData);
-        if (parsedAuthData?.email) {
-          setEmail(parsedAuthData.email);
-        }
-      } catch (error) {
-        console.error("Error parsing local storage data:", error);
-      }
-    }
-  }, []);
+  const logoutFunc = ()=>{
+    Cookies.remove('authToken');
+    router.refresh()
+    toast.success("Logout Success!")
+  }
 
   return (
     <div className="py-5 border-b bg-slate-100">
       <div className="container flex justify-between items-center">
-        {email ? email : "..."} <Button variant={"outline"}>Logout</Button>
+        {email && email} <Button onClick={()=> logoutFunc()} variant={"outline"}>Logout</Button>
       </div>
     </div>
   );
